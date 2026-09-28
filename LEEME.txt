@@ -1,0 +1,28 @@
+ALEX Y ALEXANDRA — SESIÓN 2: EL TESORO DE LAS TECLAS
+
+INICIO
+Abre index.html con Chrome, Edge, Firefox o Safari.
+Copia toda esta carpeta, incluida assets, al USB o a la computadora.
+No requiere internet para jugar. La voz depende de las voces instaladas.
+
+PARA GOOGLE DRIVE
+Sube alex-sesion-2.zip. En cada equipo descárgalo y extrae todo el ZIP.
+Después abre index.html desde la carpeta extraída, no desde la vista previa de Drive.
+
+SEGUNDA SESIÓN
+10 misiones nuevas, con letras, acentos, signos y números.
+La pista se ilumina después de 3 segundos; también hay botón Ver pista.
+Cada oración da 10 monedas. Cada 10 aciertos seguidos da 5 más.
+Cada dos misiones se abre un cofre y se ganan 20 monedas adicionales.
+Los errores reinician la racha, pero no quitan monedas.
+El jugador 1 hace las primeras 5 misiones y el jugador 2 las otras 5.
+También puede jugar una sola persona poniendo su nombre en ambos campos.
+Al final hay una medalla con los nombres y un botón para imprimirla.
+No hay límite de tiempo. El progreso dura la partida y se reinicia al cerrar.
+El teclado de apoyo muestra distribución latinoamericana; algunos signos pueden
+estar en otra posición en otros teclados. Se acepta el carácter
+que realmente escribe el teclado.
+
+La carpeta original alex--6to permanece intacta.
+
+Corrección: ¡ se ilumina con Shift + ¿; ¿ se indica sin Shift.

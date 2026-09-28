@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧒</text></svg>">
+<title>Alex y Alexandra — El tesoro de las teclas · Sesión 2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Comic Sans MS", "Chalkboard SE", system-ui, sans-serif;
+    background: linear-gradient(160deg, #4ec0e0 0%, #2f8fd6 55%, #1f6fad 100%);
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 12px; color: #21425c;
+  }
+  .game {
+    width: 100%; max-width: 880px; min-height: 560px;
+    background: #fff6e3; border-radius: 28px;
+    border: 6px solid #ffc93c; box-shadow: 0 14px 40px rgba(0,0,0,.28);
+    padding: 18px 22px; display: flex; flex-direction: column; gap: 12px;
+    position: relative;
+  }
+  h1 { text-align: center; font-size: 2rem; color: #e85a2a; letter-spacing: .5px; }
+  h1 .emo { font-size: 1.6rem; }
+  .sub { text-align: center; font-size: 1.15rem; color: #4a3208; font-weight: bold; }
+  .sub b { color: #e85a2a; }
+  .progress {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 1.1rem; font-weight: bold; color: #4a3208;
+  }
+  .dots { display: flex; gap: 8px; flex: 1; }
+  .dot {
+    flex: 1; height: 16px; border-radius: 10px;
+    background: #e8d8b0; border: 2px solid #c9a960;
+  }
+  .dot.on { background: #7bc85b; border-color: #4e9a33; }
+  .scene {
+    flex: 1; border-radius: 22px; position: relative; overflow: hidden;
+    background: linear-gradient(#bfe8ff 0%, #dff6d8 60%, #9ed178 100%);
+    min-height: 250px;
+  }
+  .scene.box { background: linear-gradient(#7b6f9e, #4a3f6e 70%); }
+  .scene.cave { background: linear-gradient(#3d3550, #251f38 75%); }
+  .scene.water { background: linear-gradient(#aee3ff, #4fb3e8 70%); }
+  .scene.gold { background: linear-gradient(#fff3c0, #ffd97a 70%); }
+  .scene.dragon { background: linear-gradient(#8a4a3a, #4a2418 72%); }
+  .scene.mar { background: linear-gradient(#aee3ff, #2f8fd6 72%); }
+  .scene.montana { background: linear-gradient(#cfe8c8, #8fb474 72%); }
+  .scene.castillo { background: linear-gradient(#98a6c9, #5a6890 72%); }
+  .scene.casa { background: linear-gradient(#ffe9b0, #f8d98a 72%); }
+
+  .floor {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 46px;
+    background: #7a9e4a; border-top: 6px solid #5d7c37;
+  }
+  .scene.box .floor, .scene.cave .floor { background: #4a3f30; border-top-color: #332b1f; }
+  .scene.water .floor { background: #d8b06e; border-top-color: #be9450; }
+  .scene.gold .floor { background: #e0b64c; border-top-color: #c79a36; }
+  .scene.dragon .floor { background: #6b4126; border-top-color: #4a2c18; }
+  .scene.mar .floor { background: #e8c98a; border-top-color: #c9a960; }
+  .scene.montana .floor { background: #9db86a; border-top-color: #7a9a4a; }
+  .scene.castillo .floor { background: #8a7a6a; border-top-color: #66584a; }
+  .scene.casa .floor { background: #c9a960; border-top-color: #a87f3e; }
+
+  .amb { position: absolute; font-size: 2rem; opacity: .9; user-select: none; }
+  .scene.dragon .amb, .scene.cave .amb, .scene.box .amb { opacity: .18; }
+  .branch { position: absolute; top: 32px; left: 14px; width: 74px; height: 7px; background: #8a5a2b; border-radius: 4px; }
+  .branch + span { position: relative; z-index: 1; }
+  .stem { position: absolute; bottom: -16px; left: 50%; width: 5px; height: 15px; background: #5d7c37; transform: translateX(-50%); border-radius: 2px; }
+  .target-flag {
+    position: absolute; right: 18px; bottom: 26px; font-size: 2.2rem;
+    filter: drop-shadow(0 3px 2px rgba(0,0,0,.2));
+  }
+  .char {
+    position: absolute; bottom: 22px; left: 12px; font-size: 2.6rem;
+    transition: left .35s ease; filter: drop-shadow(0 3px 2px rgba(0,0,0,.2));
+    line-height: 1;
+  }
+  .char img { height: 58px; width: auto; display: block; }
+  .char.front { z-index: 6; }
+  .char.off { opacity: .45; z-index: 4; }
+  .char.bounce { animation: bounce .5s ease; }
+  @keyframes bounce {
+    0%{transform:translateY(0)} 40%{transform:translateY(-22px)} 100%{transform:translateY(0)}
+  }
+  .props { position: absolute; inset: 0; pointer-events: none; }
+  .prop { position: absolute; font-size: 2rem; opacity: 0; transition: opacity .6s ease; }
+  .prop.show { opacity: 1; }
+  .shake { animation: shake .25s ease; }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)}
+    50%{transform:translateX(6px)} 75%{transform:translateX(-4px)}
+  }
+
+  .sentence {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 10px;
+    background: #fff; border: 4px solid #ffc93c; border-radius: 18px;
+    padding: 16px 12px; font-size: 1.7rem; min-height: 92px;
+  }
+  .word { display: flex; gap: 2px; }
+  .ch { font-weight: 800; color: #a08c66; }
+  .ch.done { color: #2e8b1e; }
+  .ch.cur { color: #e85a2a; border-bottom: 4px solid #e85a2a; border-radius: 2px; animation: blink 1s infinite; }
+  .ch.cur.bad { color: #c0392b; border-bottom-color: #c0392b; }
+  @keyframes blink { 50% { opacity: .45; } }
+  .gsp { width: 14px; border-bottom: 3px dotted #c9a960; display: inline-block; }
+  .gsp.done { border-bottom-color: #2e8b1e; }
+  .gsp.cur { border-bottom-color: #e85a2a; animation: blink 1s infinite; }
+
+  .kb {
+    border-radius: 16px; background: #1e3a5f; padding: 10px 10px 12px;
+    box-shadow: inset 0 0 0 3px #12304e, 0 4px 0 #12304e; user-select: none;
+  }
+  .kbrow { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
+  .kbkey {
+    width: 46px; height: 50px; min-width: 38px; border-radius: 9px;
+    background: linear-gradient(#324f6e, #27405c); border-bottom: 4px solid #16293f;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+    transition: all .18s ease; color: #9fb6cc;
+  }
+  .kbkey.kbshift { width: 96px; }
+  .kbkey.kbspace { width: 210px; }
+  .kbspace .base { font-size: .9rem; letter-spacing: 2px; }
+  .kbrowbottom { align-items: stretch; }
+  .kbkey.lit {
+    background: linear-gradient(#ffd166, #f5b93f); border-bottom-color: #c99e2e;
+    animation: ledPulse 0.9s infinite alternate;
+  }
+  .kbkey.lit .sym { color: #5b3a00; }
+  .kbkey.lit .base { color: #6b4600; }
+  .kbkey.dim { opacity: .22; }
+  @keyframes ledPulse { from { box-shadow: 0 0 10px 2px rgba(255,209,102,.55); } to { box-shadow: 0 0 20px 8px rgba(255,209,102,1); } }
+  .kbkey .sym { font-weight: 900; font-size: 1.1rem; color: #7f97ad; }
+  .kbkey .base { font-weight: bold; font-size: .78rem; color: #a9bfd3; }
+  .kbshift .sym { font-size: 1.25rem; }
+  @media (max-width: 560px) {
+    .kbkey { width: 34px; height: 44px; }
+    .kbkey.kbshift { width: 74px; }
+    .kbkey .sym { font-size: .95rem; }
+    .kbkey .base { font-size: .68rem; }
+  }
+
+  .bar { height: 12px; border-radius: 8px; background: #e8d8b0; border: 2px solid #c9a960; overflow: hidden; }
+  .bar > div { height: 100%; width: 0%; background: #7bc85b; transition: width .25s ease; }
+
+  .controls {
+    display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap;
+  }
+  button, .btn {
+    font: inherit; font-weight: bold; border: none; border-radius: 16px;
+    padding: 12px 22px; font-size: 1.15rem; cursor: pointer;
+    background: #ffd166; color: #7a4b12; box-shadow: 0 4px 0 #cf9e2e;
+    transition: transform .08s ease, box-shadow .08s ease;
+  }
+  button:active, .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #cf9e2e; }
+  button.primary { background: #f26d3d; color: #fff; box-shadow: 0 4px 0 #b94c24; }
+  button.sound { background: #7bc85b; color: #fff; box-shadow: 0 4px 0 #4e9a33; font-size: 1.05rem; }
+  .hint { text-align: center; font-size: 1.05rem; font-weight: bold; color: #4a3208; }
+
+  .overlay {
+    position: absolute; inset: 0; background: rgba(46,64,90,.92); z-index: 20;
+    display: none; align-items: center; justify-content: center; border-radius: 28px;
+    flex-direction: column; gap: 16px; text-align: center; padding: 20px;
+  }
+  .overlay.show { display: flex; }
+  .overlay h2 { font-size: 1.9rem; color: #ffd166; }
+  .overlay p { font-size: 1.2rem; color: #fff; max-width: 420px; }
+  .overlay .big { font-size: 3.2rem; }
+  .overlay .big-row { display: flex; gap: 14px; align-items: center; }
+  .overlay .big-row img { height: 72px; width: auto; filter: drop-shadow(0 3px 2px rgba(0,0,0,.25)); }
+
+  .confetti { position: absolute; width: 10px; height: 14px; border-radius: 2px; z-index: 15; pointer-events: none; top: -20px; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(620px) rotate(720deg); opacity: 0; } }
+
+  .start-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .name-input {
+    font: inherit; font-size: 1.3rem; border: 3px solid #ffc93c; border-radius: 14px;
+    padding: 10px 14px; text-align: center; max-width: 260px; outline: none;
+  }
+  .name-input:focus { border-color: #f26d3d; }
+  .start-wrap label { color: #fff; font-weight: bold; font-size: 1.1rem; }
+  @media (max-width: 560px) {
+    .sentence { font-size: 1.3rem; }
+    h1 { font-size: 1.5rem; }
+  }
+
+  body { height: auto; }
+  .rewards { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; font-weight:bold; }
+  .rewards span { background:#fff0b5; padding:8px 12px; border-radius:12px; }
+  .kbrow { flex-wrap:nowrap; gap:4px; margin-bottom:4px; }
+  .kbkey { min-width:0; flex:0 1 46px; }
+  .kbkey.kbshift, .kbkey.kbcaps { flex:0 0 76px; width:76px; }
+  .kbcaps .base { font-size:.65rem; }
+  @media (max-width:560px) { .kbkey.kbshift, .kbkey.kbcaps { flex-basis:54px; width:54px; } .kbcaps .base { font-size:.52rem; } }
+  .kbkey.kbspace { flex-basis:210px; }
+  .word { max-width:100%; flex-wrap:wrap; }
+  .overlay { min-height:560px; }
+  button:focus-visible { outline:3px solid #12304e; outline-offset:4px; }
+  @media print { body {background:white} .game > :not(#overlay) {display:none!important} #overlay {position:static;background:white;color:#21425c;display:flex} #overlay h2,#overlay p {color:#21425c} #overlay button {display:none} .game {border:6px solid #ffc93c;min-height:0} }
+  @media (prefers-reduced-motion:reduce) { *,*::before,*::after {animation:none!important;transition:none!important} .confetti {display:none} }
+</style>
+</head>
+<body>
+<div class="game" id="game">
+  <div class="overlay" id="overlay">
+    <div class="big" id="ovEmoji">🎉</div>
+    <h2 id="ovTitle">¡Bien hecho!</h2>
+    <p id="ovText"></p>
+    <button class="primary" id="ovBtn">Siguiente ➜</button>
+  </div>
+
+  <h1><span class="emo">👧</span> Alex y Alexandra <span class="emo">🧒</span></h1>
+  <p class="sub">Sesión 2 <b>·</b> ¡El tesoro de las teclas!</p>
+  <p class="sub" id="turno"></p>
+
+  <div class="rewards" aria-live="polite"><span id="coins">🪙 0 monedas</span><span id="streak">🔥 Racha: 0 / 10</span><span id="chests">🧰 0 / 5 cofres</span></div>
+  <p class="hint" id="rewardMessage">Completa las misiones y reúne los cinco tesoros.</p>
+  <div class="progress">
+    <span id="pageLabel">Misión 1</span>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <div class="bar"><div id="fillBar"></div></div>
+
+  <div class="scene" id="scene">
+    <div class="floor"></div>
+    <div class="amb" style="left:6%;top:14%">🌳</div>
+    <div class="amb" style="left:78%;top:10%">🌲</div>
+    <div class="amb" style="left:52%;top:24%">☁️</div>
+    <div class="amb" style="left:16%;top:32%"><div class="branch"></div><span>🦉</span></div>
+    <div class="amb" style="left:88%;bottom:34px;font-size:1.5rem"><span>🌸</span><div class="stem"></div></div>
+    <div class="target-flag" id="flag">⛳</div>
+    <div class="char" id="char0">👧</div>
+    <div class="char" id="char1">🧒</div>
+    <div class="props">
+      <div class="prop" style="left:22%;bottom:52px">🐸</div>
+      <div class="prop" style="left:60%;bottom:56px">🔑</div>
+      <div class="prop" style="left:16%;bottom:54px">💰</div>
+      <div class="prop" style="left:70%;bottom:58px">💎</div>
+    </div>
+  </div>
+
+  <div class="sentence" id="sentence"></div>
+
+  <div class="controls">
+    <button class="sound" id="listen">🔊 escuchar</button>
+    <button id="help">💡 Ver pista</button><button id="restart">↻ Empezar de nuevo</button>
+  </div>
+  <div class="kb" id="kb"></div>
+  <p class="hint" id="hint">¡Escribe cada oración! Usa mayúsculas, minúsculas y los caracteres especiales. 💪</p>
+</div>
+
+<script>
+const GAME = {
+  pages: [
+    {scene:"forest", sentence:"¡Alex encontró un mapa!", flag:"🗺️"},
+    {scene:"water", sentence:"¿Dónde está el río azul?", flag:"🧭"},
+    {scene:"cave", sentence:"La cueva tiene 3 gemas.", flag:"💎"},
+    {scene:"box", sentence:"¡Sí! Aquí está la llave.", flag:"🔑"},
+    {scene:"gold", sentence:"El cofre brilló: ¡qué emoción!", flag:"👑"},
+    {scene:"dragon", sentence:"El dragón pidió 5 limones.", flag:"🐲"},
+    {scene:"mar", sentence:"¿Nos llevas a la isla, capitán?", flag:"⛵"},
+    {scene:"montana", sentence:"¡Sube! Hay 2 pistas en la montaña.", flag:"🏔️"},
+    {scene:"castillo", sentence:"Alexandra gritó: ¡el tesoro es nuestro!", flag:"🏰"},
+    {scene:"casa", sentence:"¡Misión cumplida! ¿Qué aventura seguirá?", flag:"🏆"}
+  ]
+};
+
+const PROPS_SHOW = [
+  [true,false,false,false],
+  [true,false,false,false],
+  [false,true,false,false],
+  [false,false,true,false],
+  [false,false,false,true],
+  [false,false,true,true],
+  [false,false,false,true],
+  [false,false,false,false],
+  [false,true,false,false],
+  [true,false,false,true]
+];
+const HALF = 5;
+
+const players = [
+  { name: "Alexandra", imgs: [], celebrate: null, shape: "👧" },
+  { name: "Alex",      imgs: [], celebrate: null, shape: "🧒" }
+];
+
+const el = {
+  overlay: document.getElementById("overlay"),
+  ovEmoji: document.getElementById("ovEmoji"),
+  ovTitle: document.getElementById("ovTitle"),
+  ovText: document.getElementById("ovText"),
+  ovBtn: document.getElementById("ovBtn"),
+  pageLabel: document.getElementById("pageLabel"),
+  dots: document.getElementById("dots"),
+  fillBar: document.getElementById("fillBar"),
+  scene: document.getElementById("scene"),
+  flag: document.getElementById("flag"),
+  chars: [document.getElementById("char0"), document.getElementById("char1")],
+  turno: document.getElementById("turno"),
+  sentence: document.getElementById("sentence"),
+  hint: document.getElementById("hint"),
+  listen: document.getElementById("listen"),
+  restart: document.getElementById("restart"),
+  props: [...document.querySelectorAll(".prop")]
+};
+
+const SCENES = ["forest","water","cave","box","gold","dragon","mar","montana","castillo","casa"];
+
+let coins = 0, streak = 0, bestStreak = 0, chests = 0, correct = 0, mistakes = 0;
+let hintTimer = null, finishTimer = null;
+const treasures = ['🧭 Brújula exploradora', '🔑 Llave de la cueva', '🐲 Dragón amigo', '💎 Gema de la montaña', '👑 Corona del teclado'];
+function updateRewards(message) {
+  document.getElementById('coins').textContent = '🪙 ' + coins + ' monedas';
+  document.getElementById('streak').textContent = '🔥 Racha: ' + streak + ' aciertos';
+  document.getElementById('chests').textContent = '🧰 ' + chests + ' / 5 cofres';
+  if (message) document.getElementById('rewardMessage').textContent = message;
+}
+function resetAdventure() {
+  clearTimeout(finishTimer); clearTimeout(hintTimer);
+  coins = streak = bestStreak = chests = correct = mistakes = 0;
+  page = 0; el.overlay.classList.remove('show');
+  document.getElementById('printMedal')?.remove();
+  updateRewards('Completa las misiones y reúne los cinco tesoros.');
+  buildDots(); el.pageLabel.textContent = 'Misión 1'; startSentence();
+}
+function showHint() {
+  clearTimeout(hintTimer);
+  if (!playing || !curChar()) return;
+  kbLight(curChar());
+  el.hint.textContent = ACCENTED[curChar()] ? 'Pulsa la tecla de acento ´ y después ' + ACCENTED[curChar()] + '. Su posición puede variar según tu teclado.' : (SHIFT_CHARS.has(curChar()) ? 'Mantén Shift y pulsa ' + SYM_TO_BASE[curChar()] + ' para escribir ' + curChar() + '.' : 'Pulsa ' + (curChar() === ' ' ? 'espacio' : curChar()) + ' sin Shift. ¡Tú puedes!');
+}
+let page = 0;
+let li = 0;
+let stepped = 0;
+let playing = false;
+let active = 0;
+let els = [];
+let frameIdx = 0;
+const ACCENTED = { 'á':'a', 'é':'e', 'í':'i', 'ó':'o', 'ú':'u' };
+const ACCENT_KEYS = Object.keys(ACCENTED);
+let pendingAccent = false;
+let accentKeyed = { 'a':false,'e':false,'i':false,'o':false,'u':false };
+
+function probe(src){
+  return new Promise(res=>{
+    const im = new Image();
+    im.onload = () => res(src);
+    im.onerror = () => res(null);
+    im.src = src;
+  });
+}
+
+async function collect(prefix){
+  const found = [];
+  for (const f of [prefix + ".png", prefix + "-2.png", prefix + "-3.png"]){
+    const src = await probe("assets/" + f);
+    if (src) found.push(src);
+  }
+  return found;
+}
+
+async function initChars(){
+  players[0].imgs = await collect("alexandra");
+  players[0].celebrate = await probe("assets/alexandra-fiesta.png");
+  players[1].imgs = await collect("alex");
+  players[1].celebrate = await probe("assets/alex-fiesta.png");
+  drawChars();
+  refreshStart();
+  refreshChar();
+}
+
+function setCharImg(c, src){
+  if (src){
+    if (!c._img){
+      c.innerHTML = "";
+      c._img = document.createElement("img");
+      c._img.className = "char-img";
+      c.appendChild(c._img);
+    }
+    c._img.src = src;
+  } else {
+    if (c._img){ c.innerHTML = c._fallback; c._img = null; }
+  }
+}
+
+function drawChars(){
+  el.chars.forEach((c,i)=>{
+    c._fallback = players[i].shape;
+    setCharImg(c, players[i].imgs[0] || null);
+  });
+}
+
+function refreshStart(){
+  const a = document.getElementById("sc0"), b = document.getElementById("sc1");
+  if (a){ a._fallback = players[0].shape; setCharImg(a, players[0].imgs[0] || null); }
+  if (b){ b._fallback = players[1].shape; setCharImg(b, players[1].imgs[0] || null); }
+}
+
+function stepActive(){
+  const imgs = players[active].imgs;
+  setCharImg(el.chars[active], imgs.length ? imgs[frameIdx % imgs.length] : null);
+}
+
+function celebrateActive(){
+  setCharImg(el.chars[active], players[active].celebrate || null);
+}
+
+function setScene(cls){
+  for (const c of SCENES) el.scene.classList.remove(c);
+  el.scene.classList.add(cls);
+}
+
+function buildDots(){
+  el.dots.innerHTML = "";
+  GAME.pages.forEach((_,i)=>{
+    const d = document.createElement("div");
+    d.className = "dot" + (i < page ? " on" : "");
+    el.dots.appendChild(d);
+  });
+}
+
+function keysOf(){ return (GAME.pages[page]?.sentence || "").split(""); }
+
+function renderSentence(){
+  const words = GAME.pages[page].sentence.split(" ");
+  els = [];
+  el.sentence.innerHTML = "";
+  words.forEach((w, wi)=>{
+    const word = document.createElement("span");
+    word.className = "word";
+    for (const k of w){
+      const sp = document.createElement("span");
+      sp.className = "ch";
+      sp.textContent = k;
+      word.appendChild(sp);
+      els.push(sp);
+    }
+    el.sentence.appendChild(word);
+    if (wi < words.length - 1){
+      const gsp = document.createElement("span");
+      gsp.className = "gsp";
+      gsp.innerHTML = "&nbsp;";
+      gsp.title = "espacio";
+      el.sentence.appendChild(gsp);
+      els.push(gsp);
+    }
+  });
+  els.forEach((sp,i)=>{
+    if (i < li) sp.classList.add("done");
+    else if (i === li && playing) sp.classList.add("cur");
+  });
+}
+
+function speak(text){
+  if (!("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "es-MX"; u.rate = 0.85; u.pitch = 1.1;
+  window.speechSynthesis.speak(u);
+}
+
+function wordAt(){
+  const words = (GAME.pages[page]?.sentence || "").split(" ");
+  let acc = 0;
+  for (const w of words){
+    if (li <= acc + w.length) return w;
+    acc += w.length + 1;
+  }
+  return GAME.pages[page]?.sentence || "";
+}
+
+function speakNow(){
+  if (page >= GAME.pages.length) return;
+  const w = wordAt();
+  if (w && w.length <= 9) speak(w);
+  else speak(GAME.pages[page].sentence);
+}
+
+function totalChars(){
+  return GAME.pages[page]?.sentence.length || 0;
+}
+
+/* ===== teclado led ===== */
+const KB_ROWS = {
+  es: [
+    { s:['!','"','#','$','%','&','/','(',')','=','?','¡'], b:['1','2','3','4','5','6','7','8','9','0',"'",'¿'] },
+    { s:['Q','W','E','R','T','Y','U','I','O','P','¨','*'], b:['q','w','e','r','t','y','u','i','o','p','´','+'] },
+    { s:['A','S','D','F','G','H','J','K','L','Ñ','[',']'], b:['a','s','d','f','g','h','j','k','l','ñ','{','}'] },
+    { s:['>','Z','X','C','V','B','N','M',';',':','_'], b:['<','z','x','c','v','b','n','m',',','.','-'] }
+  ]
+};
+const SHIFT_CHARS = new Set(KB_ROWS.es.flatMap(row => row.s));
+const SYM_TO_BASE = (() => {
+  const m = {};
+  KB_ROWS.es.forEach(r => r.s.forEach((s, i) => { m[s] = r.b[i]; }));
+  return m;
+})();
+const BASE_TO_CODE = {
+  '1':'Digit1','2':'Digit2','3':'Digit3','4':'Digit4','5':'Digit5','6':'Digit6','7':'Digit7','8':'Digit8','9':'Digit9','0':'Digit0',
+  "'":'Minus','¡':'Equal',
+  'q':'KeyQ','w':'KeyW','e':'KeyE','r':'KeyR','t':'KeyT','y':'KeyY','u':'KeyU','i':'KeyI','o':'KeyO','p':'KeyP','´':'BracketLeft',
+  'a':'KeyA','s':'KeyS','d':'KeyD','f':'KeyF','g':'KeyG','h':'KeyH','j':'KeyJ','k':'KeyK','l':'KeyL','ñ':'Semicolon',
+  '<':'IntlBackslash','z':'KeyZ','x':'KeyX','c':'KeyC','v':'KeyV','b':'KeyB','n':'KeyN','m':'KeyM',
+  ',':'Comma','.':'Period','-':'Slash',' ':'Space'
+};
+let kbels = [];
+function kbRowsHtml(){
+  const cfg = KB_ROWS.es;
+  return cfg.map((r, row) => {
+    const leading = row === 2
+      ? '<div class="kbkey kbcaps" id="kbCaps" title="Bloqueo de mayúsculas"><span class="sym">⇪</span><span class="base">Bloq Mayús</span></div>'
+      : row === 3
+        ? '<div class="kbkey kbshift" id="kbShift"><span class="sym">⇧</span><span class="base">Shift</span></div>'
+        : '';
+    return '<div class="kbrow">' + leading + r.b.map((b,i) =>
+      '<div class="kbkey" data-base="'+b+'"><span class="sym">'+r.s[i]+'</span><span class="base">'+b+'</span></div>'
+    ).join('') + '</div>';
+  }).join('');
+}
+function buildKb(){
+  const kb = document.getElementById("kb");
+  kb.innerHTML =
+    kbRowsHtml() +
+    '<div class="kbrow kbrowbottom">' +
+    '<div class="kbkey kbspace" data-base=" "><span class="base">espacio</span></div></div>';
+  kbels = Array.from(kb.querySelectorAll(".kbkey"));
+}
+function kbReset(){
+  kbels.forEach(k => { k.classList.remove("lit"); k.classList.add("dim"); });
+}
+function kbLight(base){
+  kbReset();
+  let hid = ACCENTED[base] || base;
+  if (SYM_TO_BASE[base] !== undefined) hid = SYM_TO_BASE[base];
+  const isShift = SHIFT_CHARS.has(base);
+  let lit = false;
+  kbels.forEach(k => {
+    let on = (k.dataset.base === hid) || (k.id === "kbShift" && isShift);
+    if (ACCENTED[base] !== undefined && k.dataset.base === "´"){ on = true; }
+    if (on){ k.classList.remove("dim"); k.classList.add("lit"); lit = true; }
+  });
+  return lit;
+}
+
+function curChar(){
+  if (li >= totalChars()) return null;
+  return keysOf()[li];
+}
+
+function refreshChar(){
+  if (page >= GAME.pages.length) return;
+  const target = el.scene.clientWidth - 76;
+  const pct = stepped / totalChars();
+  const on = el.chars[active], off = el.chars[1 - active];
+  on.classList.add("front"); on.classList.remove("off");
+  off.classList.remove("front"); off.classList.add("off");
+  on.style.left = (12 + pct * (target - 12)) + "px";
+  if (active === 1) el.chars[0].style.left = target + "px";
+  else el.chars[1].style.left = "12px";
+  el.fillBar.style.width = Math.round(pct*100) + "%";
+  clearTimeout(hintTimer);
+  kbReset();
+  kbels.forEach(k => k.classList.remove('dim'));
+  if (playing && curChar() != null) {
+    el.hint.textContent = 'Busca la tecla: la pista aparecerá en 3 segundos. 💡';
+    hintTimer = setTimeout(showHint, 3000);
+  }
+}
+
+function showProps(list){
+  list.forEach((v,i)=> el.props[i].classList.toggle("show", !!v));
+}
+
+function startSentence(){
+  active = page < HALF ? 0 : 1;
+  li = 0; stepped = 0; playing = true; frameIdx = 0;
+  pendingAccent = false; accentKeyed = { 'a':false,'e':false,'i':false,'o':false,'u':false };
+  setScene(GAME.pages[page].scene);
+  el.flag.textContent = GAME.pages[page].flag;
+  showProps(PROPS_SHOW[page]);
+  el.turno.textContent = "Escribe la oración para que avance " + players[active].name;
+  el.chars[0].style.left = "12px";
+  el.chars[1].style.left = "12px";
+  el.fillBar.style.width = "0%";
+  renderSentence();
+  drawChars();
+  refreshChar();
+  stepActive();
+}
+
+function nextPage(){
+  page++;
+  const switched = (page === HALF);
+  active = page < HALF ? 0 : 1;
+  if (page >= GAME.pages.length){
+    el.overlay.classList.add("show");
+    el.ovEmoji.textContent = "🏆";
+    el.ovTitle.textContent = "¡Lo lograron, " + players[0].name + " y " + players[1].name + "!";
+    el.ovText.textContent = 'Medalla de exploradores del teclado 🏅 · ' + coins + ' monedas · 5 cofres. Mejor racha: ' + bestStreak + ' letras. Precisión: ' + Math.round(correct / Math.max(1, correct + mistakes) * 100) + ' %. ¡El tesoro es suyo!';
+    buildDots();
+    const printButton = document.createElement('button');
+    printButton.id = 'printMedal'; printButton.textContent = '🖨️ Imprimir medalla';
+    printButton.onclick = () => window.print();
+    el.overlay.appendChild(printButton);
+    el.ovBtn.textContent = "jugar otra vez";
+    spawnConfetti(80);
+    return;
+  }
+  buildDots();
+  el.pageLabel.textContent = "Misión " + (page+1);
+  el.overlay.classList.add("show");
+  if (switched){
+    el.ovEmoji.textContent = "🏃";
+    el.ovTitle.textContent = "¡le toca a " + players[1].name + "!";
+    el.ovText.textContent = players[0].name + " ya hizo su parte. ahora tú, " + players[1].name;
+    el.ovBtn.textContent = "¡ya voy! ➜";
+  } else {
+    const p = players[active];
+    el.ovEmoji.textContent = "🎉";
+    el.ovTitle.textContent = "¡bien hecho, " + p.name + "!";
+    el.ovText.textContent = "acompaña a " + p.name + " al siguiente lugar";
+    el.ovBtn.textContent = "siguiente ➜";
+  }
+  const earned = page % 2 === 0 ? ' Cofre abierto: ' + treasures[chests - 1] + '. +20 monedas.' : '';
+  el.ovText.textContent += ' +10 monedas por completar la misión.' + earned;
+  el.ovEmoji.textContent = page % 2 === 0 ? '🎁' : '⭐';
+}
+
+function wrongKey(){
+  mistakes++; streak = 0; updateRewards("Inténtalo otra vez. Tus monedas están a salvo. 💪");
+  showHint();
+  if (li >= els.length) return;
+  els[li].classList.add("bad");
+  const s = document.getElementById("sentence");
+  s.classList.remove("shake"); void s.offsetWidth; s.classList.add("shake");
+  const c = el.chars[active];
+  c.classList.remove("bounce"); void c.offsetWidth; c.classList.add("bounce");
+}
+
+function goodKey(){
+  if (li >= els.length) return;
+  els[li].classList.remove("bad","cur");
+  els[li].classList.add("done");
+  correct++; streak++; bestStreak = Math.max(bestStreak, streak);
+  if (streak % 10 === 0) { coins += 5; updateRewards('¡10 aciertos seguidos! +5 monedas ⭐'); spawnConfetti(10); }
+  updateRewards();
+  li++; stepped++; frameIdx++;
+  if (els[li]) els[li].classList.add("cur");
+  refreshChar();
+  stepActive();
+  if (li >= totalChars()) finishSentence();
+}
+
+function onKey(ev){
+  if (!playing || ev.metaKey || ev.ctrlKey || ev.altKey || ev.repeat) return;
+  if (['Shift','Control','Alt','Meta','CapsLock','Tab','Enter','Escape'].includes(ev.key)) return;
+  ev.preventDefault();
+  const target = curChar();
+  if (target == null) return;
+  if (ev.key === target) { pendingAccent = false; goodKey(); return; }
+
+  if (ACCENTED[target] !== undefined){
+    const base = ACCENTED[target];
+    const accentHit = (ev.key === "Dead") || (ev.key === "´");
+    if (!pendingAccent){
+      if (accentHit){ pendingAccent = true; accentKeyed[base] = true; }
+      else wrongKey();
+      return;
+    }
+    if (ev.key === base || ev.key === target){
+      pendingAccent = false; accentKeyed = { 'a':false,'e':false,'i':false,'o':false,'u':false };
+      goodKey();
+    } else wrongKey();
+    return;
+  }
+
+  wrongKey();
+}
+
+function finishSentence(){
+  playing = false;
+  clearTimeout(hintTimer);
+  coins += 10;
+  if ((page + 1) % 2 === 0) { coins += 20; chests++; }
+  updateRewards((page + 1) % 2 === 0 ? '🎁 ¡Cofre abierto! ' + treasures[chests - 1] : '⭐ Misión terminada: +10 monedas');
+  const c = el.chars[active];
+  c.classList.remove("bounce"); void c.offsetWidth; c.classList.add("bounce");
+  celebrateActive();
+  spawnConfetti(26);
+  finishTimer = setTimeout(nextPage, 900);
+}
+
+function spawnConfetti(n){
+  const colors = ["#ff5d5d","#ffd166","#7bc85b","#5da9ff","#c77bff","#ff9ecb"];
+  for (let i=0;i<n;i++){
+    const c = document.createElement("div");
+    c.className = "confetti";
+    c.style.left = (10+Math.random()*80) + "%";
+    c.style.background = colors[Math.floor(Math.random()*colors.length)];
+    c.style.animationDuration = (1.4+Math.random()*1.4) + "s";
+    c.style.animationDelay = (Math.random()*0.5) + "s";
+    document.getElementById("game").appendChild(c);
+    setTimeout(()=> c.remove(), 3200);
+  }
+}
+
+el.ovBtn.addEventListener("click", ()=>{
+  el.ovBtn.blur();
+  el.overlay.classList.remove("show");
+  if (page >= GAME.pages.length){
+    resetAdventure();
+  } else {
+    startSentence();
+  }
+});
+
+el.listen.addEventListener("click", ()=>{ el.listen.blur(); speakNow(); });
+el.sentence.addEventListener("click", speakNow);
+el.restart.addEventListener("click", ()=>{
+  el.restart.blur();
+  resetAdventure();
+});
+document.getElementById("help").addEventListener("click", e => { e.currentTarget.blur(); showHint(); });
+document.addEventListener("keydown", onKey);
+window.addEventListener("resize", refreshChar);
+
+const overlayInit = document.createElement("div");
+overlayInit.className = "overlay show";
+overlayInit.innerHTML = `
+  <div class="big-row"><span class="big" id="sc0">👧</span><span class="big" id="sc1">🧒</span></div>
+  <h2>¡El tesoro de las teclas!</h2>
+  <p>Busca las teclas, gana monedas y abre 5 cofres. La pista llega en 3 segundos. ¡Sin prisa!</p>
+  <div class="start-wrap">
+    <label for="name1">jugador 1</label>
+    <input class="name-input" id="name1" value="Alexandra" maxlength="16">
+    <label for="name2">jugador 2</label>
+    <input class="name-input" id="name2" value="Alex" maxlength="16">
+    <button class="primary" id="go">¡a jugar! 🌟</button>
+  </div>`;
+document.getElementById("game").appendChild(overlayInit);
+
+overlayInit.querySelector("#go").addEventListener("click", ()=>{
+  const n1 = overlayInit.querySelector("#name1").value.trim();
+  const n2 = overlayInit.querySelector("#name2").value.trim();
+  players[0].name = n1 || "Alexandra";
+  players[1].name = n2 || "Alex";
+  overlayInit.remove();
+  buildDots();
+  startSentence();
+});
+overlayInit.querySelector("#name2").addEventListener("keydown",(e)=>{
+  if (e.key === "Enter") overlayInit.querySelector("#go").click();
+});
+buildKb();
+initChars();
+</script>
+</body>
+</html>
